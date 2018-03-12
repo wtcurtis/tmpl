@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
-	"templater/cmd"
+	"github.com/wtcurtis/tmpl/cmd"
 )
 
 /**

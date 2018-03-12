@@ -16,12 +16,8 @@ var RootCommand = &cobra.Command{
 
 func init() {
 	RootCommand.PersistentFlags().StringVarP(&region, "region", "r", "", "AWS region to pull from")
-	cobra.OnInitialize(configure)
 
 	awsSession = session.Must(session.NewSession(&aws.Config{
 		Region: &region,
 	}))
-}
-
-func configure() {
 }
