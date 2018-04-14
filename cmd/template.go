@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"bytes"
 	"fmt"
+	"os"
 )
 
 var src *string
@@ -28,18 +29,24 @@ var tplCommand = &cobra.Command{
 		}
 
 		contents := string(tplb)
-		tpl, err := template.New("").Funcs(template.FuncMap {
+		tpl, err := template.New("").Funcs(template.FuncMap{
 			"param": func(n string) (string, error) {
-				return outVar(*varPrefix + n, false, "")
+				return outVar(*varPrefix+n, false, "")
 			},
 			"paramD": func(n string, def string) (string, error) {
-				return outVar(*varPrefix + n, true, def)
+				return outVar(*varPrefix+n, true, def)
 			},
 			"paramFull": func(n string) (string, error) {
 				return outVar(n, false, "")
 			},
 			"paramFullD": func(n string, def string) (string, error) {
 				return outVar(n, true, def)
+			},
+			"env": func(n string) (string, error) {
+				return outEnv(n, false, "")
+			},
+			"envD": func(n string, def string) (string, error) {
+				return outEnv(n, true, def)
 			},
 		}).Parse(contents)
 		if err != nil {
@@ -58,6 +65,19 @@ var tplCommand = &cobra.Command{
 			fmt.Print(buf.String())
 		}
 	},
+}
+
+func outEnv(n string, allowDefault bool, def string) (string, error) {
+	val, ok := os.LookupEnv(n)
+	if !ok {
+		if !allowDefault {
+			return "", fmt.Errorf("no such environment variable: %s", n)
+		}
+
+		return def, nil
+	}
+
+	return val, nil
 }
 
 func outVar(n string, allowDefault bool, def string) (string, error) {
@@ -81,7 +101,6 @@ func outVar(n string, allowDefault bool, def string) (string, error) {
 
 		return "", err
 	}
-
 
 	params[n] = val
 	return val, nil

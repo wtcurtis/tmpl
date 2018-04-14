@@ -25,6 +25,10 @@ var loadCmd = &cobra.Command{
 			for k, v := range loaded {
 				fmt.Printf("export %s=\"%x\"", toBashName(k), toBashValue(v))
 			}
+		case "raw":
+			for _, v := range loaded {
+				fmt.Println(v)
+			}
 		case "json":
 		default:
 			st, err := json.MarshalIndent(loaded, "", "  ")
@@ -39,11 +43,12 @@ var loadCmd = &cobra.Command{
 
 func init() {
 	RootCommand.AddCommand(loadCmd)
-	outFormat = loadCmd.Flags().StringP("output-format", "o", "", "'json', 'environment' (default 'environment')")
+	outFormat = loadCmd.Flags().StringP("output-format", "o", "", "'json', 'environment', 'raw' (default 'raw')")
 	vars = loadCmd.Flags().StringSliceP("vars", "v", nil, "list of vars to retrieve")
 }
 
 var escRegex = regexp.MustCompile("[^a-zA-Z0-9_]")
+
 func toBashName(k string) string {
 	return strings.ToUpper(string(escRegex.ReplaceAll([]byte(k), []byte("_"))))
 }
@@ -110,4 +115,3 @@ func MustLoadParams(cl *ssm.SSM, names []string) map[string]string {
 	}
 	return res
 }
-
